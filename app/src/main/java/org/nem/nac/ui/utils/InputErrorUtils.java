@@ -38,7 +38,7 @@ public final class InputErrorUtils {
 		final int textColor = (textColorTag != null && textColorTag instanceof Integer) ? (int)textColorTag : resources
 				.getColor(R.color.default_black);
 		final int hintColor = (hintColorTag != null && hintColorTag instanceof Integer) ? (int)hintColorTag : resources
-				.getColor(R.color.hint_foreground_material_light);
+				.getColor(R.color.light_gray);
 
 		input.setTextColor(textColor);
 		input.setHintTextColor(hintColor);

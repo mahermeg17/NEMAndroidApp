@@ -1,5 +1,5 @@
 apply plugin: 'com.android.application'
-apply plugin: 'me.tatarka.retrolambda'
+
 
 buildscript {
     repositories {
@@ -11,8 +11,7 @@ buildscript {
 }
 
 android {
-    compileSdkVersion 24
-    buildToolsVersion '24.0.2'
+    compileSdkVersion 27
     tasks.whenTaskAdded { task ->
         switch (task.name) {
             case "compileDemoDebugSources":
@@ -26,19 +25,16 @@ android {
                 break
         }
     }
-    def String versionNameStr = getVersionName()
+    String versionNameStr = getVersionName()
     defaultConfig {
         applicationId "org.nem.nac.mainnet"
         minSdkVersion 15
-        targetSdkVersion 22
+        targetSdkVersion 27
         versionCode 1
         versionName versionNameStr
         multiDexEnabled true
     }
-    compileOptions {
-        sourceCompatibility JavaVersion.VERSION_1_8
-        targetCompatibility JavaVersion.VERSION_1_8
-    }
+
     buildTypes {
         release {
             minifyEnabled false
@@ -52,33 +48,36 @@ android {
         exclude 'META-INF/LICENSE'
         exclude 'META-INF/NOTICE'
     }
+    flavorDimensions "dev", "demo"
+
     productFlavors {
         dev {
+            dimension "dev"
         }
         demo {
+            dimension "demo"
         }
     }
     dexOptions {
         jumboMode = true
     }
-}
 
-retrolambda {
-    jdk System.getenv("JAVA8_HOME")
-    oldJdk System.getenv("JAVA7_HOME")
-    javaVersion JavaVersion.VERSION_1_7
+    compileOptions {
+        targetCompatibility 1.8
+        sourceCompatibility 1.8
+    }
 }
 
 dependencies {
     compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
-    compile 'com.android.support:multidex:1.0.1'
+    compile 'com.android.support:multidex:1.0.2'
     compile 'com.annimon:stream:1.0.5'
     compile 'com.jakewharton.timber:timber:4.1.0'
     compile 'com.madgag.spongycastle:prov:1.51.0.0'
-    compile 'com.android.support:appcompat-v7:24.2.0'
-    compile 'com.android.support:design:24.2.0'
-    compile 'com.android.support:support-v4:24.2.0'
+    compile 'com.android.support:appcompat-v7:27.0.2'
+    compile 'com.android.support:design:27.0.2'
+    compile 'com.android.support:support-v4:27.0.2'
     compile 'com.google.zxing:core:3.2.1'
     compile 'nl.qbusict:cupboard:2.1.4'
     compile 'com.squareup.okhttp:okhttp:2.3.0'
@@ -92,63 +91,65 @@ dependencies {
 /**
  * Custom staff
  */
-def bumpVersion(def boolean bumpProduction) {
+def bumpVersion( boolean bumpProduction) {
     def PROP_MAJOR = 'version-major',
         PROP_MINOR = 'version-minor',
         PROP_PRODUCTION = 'production-build'
-    def File versionFile = file('version.properties');
+     File versionFile = file('version.properties')
     if (!versionFile.exists()) {
         if (!versionFile.createNewFile()) {
-            throw new IOException("Failed to create version file");
+            throw new IOException("Failed to create version file")
         }
     }
 
     if (versionFile.canRead()) {
-        def Properties props = new Properties();
-        props.load(versionFile.newReader("UTF-8"));
-        def versionMajor = props.getProperty(PROP_MAJOR, "0").toInteger();
-        def versionMinor = props.getProperty(PROP_MINOR, "0").toInteger();
-        def versionProduction = props.getProperty(PROP_PRODUCTION, "0").toInteger();
+         Properties props = new Properties()
+        props.load(versionFile.newReader("UTF-8"))
+        def versionMajor = props.getProperty(PROP_MAJOR, "0").toInteger()
+        def versionMinor = props.getProperty(PROP_MINOR, "0").toInteger()
+        def versionProduction = props.getProperty(PROP_PRODUCTION, "0").toInteger()
         if (bumpProduction) {
             versionProduction++
         }
-        props.setProperty(PROP_MAJOR, versionMajor.toString());
+        props.setProperty(PROP_MAJOR, versionMajor.toString())
         props.setProperty(PROP_MINOR, versionMinor.toString())
         props.setProperty(PROP_PRODUCTION, versionProduction.toString())
         props.store(versionFile.newWriter("UTF-8"), "Application version information. Managed by Gradle")
     }
 }
 
-def String getVersionName() {
-    def PROP_MAJOR = 'version-major', PROP_MINOR = 'version-minor', PROP_PRODUCTION = 'production-build'
-    def File versionFile = file('version.properties');
+String getVersionName() {
+    def PROP_MAJOR = 'version-major',
+        PROP_MINOR = 'version-minor',
+        PROP_PRODUCTION = 'production-build'
+    File versionFile = file('version.properties')
     if (!versionFile.exists()) {
         if (!versionFile.createNewFile()) {
             throw new IOException("Failed to create version file!")
         }
     }
     if (versionFile.canRead()) {
-        def Properties props = new Properties();
-        props.load(versionFile.newReader("UTF-8"));
-        def versionMajor = props.getProperty(PROP_MAJOR, "0");
-        def versionMinor = props.getProperty(PROP_MINOR, "0");
-        def versionProduction = props.getProperty(PROP_PRODUCTION, "0").toInteger();
+         Properties props = new Properties()
+        props.load(versionFile.newReader("UTF-8"))
+        def versionMajor = props.getProperty(PROP_MAJOR, "0")
+        def versionMinor = props.getProperty(PROP_MINOR, "0")
+        def versionProduction = props.getProperty(PROP_PRODUCTION, "0").toInteger()
 
-        return versionMajor + "." + versionMinor + "." + versionProduction + " BETA Mainnet";
+        return versionMajor + "." + versionMinor + "." + versionProduction + " BETA Mainnet"
     } else {
-        throw new IOException("Failed to read version file!");
+        throw new IOException("Failed to read version file!")
     }
 }
 
 task buildDevApp << {
-    bumpVersion(false);
-    setApkName();
+    bumpVersion(false)
+    setApkName()
 }
 
 task buildDemoApp << {
-    bumpVersion(true);
+    bumpVersion(true)
     android.defaultConfig.versionName = getVersionName()
-    setApkName();
+    setApkName()
 }
 
 def setApkName() {
